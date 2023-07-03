@@ -79,19 +79,20 @@ const x1 = (p: Omit<Param, "x">): number =>
   });
 
 /** 位置xでの主鉄筋の断面積 (mm2) */
-const As = (p: Param): number => (p.x < x1(p) ? p.m : p.n) * steelArea(p.phi);
+export const As = (p: Param): number =>
+  (p.x < x1(p) ? p.m : p.n) * steelArea(p.phi);
 
 /** 位置xでの主鉄筋間隔 (mm) */
-const cs = (p: Param): number => p.x < x1(p) ? b / p.m : b / p.n;
+export const cs = (p: Param): number => p.x < x1(p) ? b / p.m : b / p.n;
 
 /** 主鉄筋比 */
-const P = (p: Param): number => As(p) / (b * 1000 * d(p));
+export const P = (p: Param): number => As(p) / (b * 1000 * d(p));
 
 /** x=0mでの断面有効高さ (m) */
 const d0 = (p: Param): number => p.b2 - (p.c + 0.5 * p.phi) / 1000;
 
 /** 断面有効高さ (m) */
-const d = (p: Param): number => d0(p) - (p.b2 - p.b4) / h1 * p.x;
+export const d = (p: Param): number => d0(p) - (p.b2 - p.b4) / h1 * p.x;
 
 // 断面力の算定
 
@@ -101,11 +102,11 @@ const Vd1a = gamma_a * gamma_f * k1 * (1 / 2) * w1 * Math.cos(beta1);
 const Vd1b = gamma_a * gamma_f * k1 * q0 * Math.cos(beta1);
 
 /** 常時作用曲げmoment (kN) */
-const Md1 = ({ x }: Param) =>
+export const Md1 = ({ x }: Param): number =>
   (1 / 3) * Vd1a * (h1 - x) ** 3 +
   (1 / 2) * Vd1b * (h1 - x) ** 2;
 /** 常時作用剪断力 (kN/m) */
-const Vd1 = (p: Param) =>
+export const Vd1 = (p: Param): number =>
   Vd1a * (h1 - p.x) ** 2 +
   Vd1b * (h1 - p.x) -
   (p.b2 - p.b4) / h1 * (Md1(p) / d(p));
@@ -124,43 +125,44 @@ const Vd2b = ({ b4 }: Param): number =>
   );
 
 /** 地震時作用曲げmoment (kN) */
-const Md2 = (p: Param): number =>
+export const Md2 = (p: Param): number =>
   (1 / 3) * Vd2a(p) * (h1 - p.x) ** 3 +
   (1 / 2) * Vd2b(p) * (h1 - p.x) ** 2;
 /** 地震時作用剪断力 (kN/m) */
-const Vd2 = (p: Param) =>
+export const Vd2 = (p: Param): number =>
   Vd2a(p) * (h1 - p.x) ** 2 +
   Vd2b(p) * (h1 - p.x) -
   (p.b2 - p.b4) / h1 * (Md2(p) / d(p));
 
 /** 設計単位幅曲げ耐力 (kN) */
-const Mud = (p: Param): number =>
+export const Mud = (p: Param): number =>
   As(p) * f_yd * d(p) * (1 - 0.6 * P(p) * (f_yd / f_cd)) / gamma_b / b;
 
 /** (N/mm2) */
 const f_vcd = 0.20 * (f_cd) ** (1 / 3);
-const beta_d = (p: Param): number => Math.min((1 / d(p)) ** 0.25, 1.5);
-const beta_p = (p: Param): number => Math.min((100 * P(p)) ** (1 / 3), 1.5);
+export const beta_d = (p: Param): number => Math.min((1 / d(p)) ** 0.25, 1.5);
+export const beta_p = (p: Param): number =>
+  Math.min((100 * P(p)) ** (1 / 3), 1.5);
 /** 設計斜めひび割れ強度 (N/mm2) */
-const f_vvcd = (p: Param): number => beta_d(p) * beta_p(p) * f_vcd;
+export const f_vvcd = (p: Param): number => beta_d(p) * beta_p(p) * f_vcd;
 /** 設計単位幅剪断耐力 (kN/m) */
-const Vcd = (p: Param): number => f_vvcd(p) * 1000 * d(p) / 1.3;
+export const Vcd = (p: Param): number => f_vvcd(p) * 1000 * d(p) / 1.3;
 
 /** young率比 */
-const n = 7.1;
+export const n = 7.1;
 /** 鉄筋のYoung率 (kN/mm2) */
 const E_s = 200;
-const j = (p: Param): number =>
+export const j = (p: Param): number =>
   1 - (-n * P(p) + ((n * P(p) + 1) ** 2 - 1) ** 0.5) / 3;
 
 /** 鉄筋応力 (kN/mm^2) */
-const sigma_s = (p: Param): number =>
+export const sigma_s = (p: Param): number =>
   b * Md1(p) / (gamma_a * gamma_f * As(p) * 1000 * d(p) * j(p));
 /** 許容ひび割れ幅 (mm) */
 const wa = ({ c }: Param): number => 0.005 * c;
+export const l = (p: Param): number => 4 * p.c + 0.7 * (cs(p) - p.phi);
 /** ひび割れ幅 (mm) */
-const w = (p: Param): number =>
-  (4 * p.c + 0.7 * (cs(p) - p.phi)) * (sigma_s(p) / E_s);
+export const w = (p: Param): number => l(p) * (sigma_s(p) / E_s);
 
 /** 常時曲げ検討 */
 export const F_M1 = (p: Param): number => 1.15 * Md1(p) / Mud(p);
