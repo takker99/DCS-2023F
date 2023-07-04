@@ -72,7 +72,7 @@ const l_d = (p: Pick<Param, "phi">): number =>
   0.25 * 0.6 * p.phi * (f_yd / f_bod);
 
 /** 定着長の検討断面高さ (m)*/
-const x1 = (p: Omit<Param, "x">): number =>
+export const x1 = (p: Omit<Param, "x">): number =>
   ((p1) => p1.x - d(p1))({
     ...p,
     x: p.hs - l_d(p) / 1000,
@@ -198,12 +198,13 @@ export const V_c = (p: Omit<Param, "x">): number =>
 /** 検討位置 */
 export const checkPoints = (
   p: Omit<Param, "x">,
-): [number, number, number, number, number, number, number] => [
-  0,
-  p.b2 / 2,
-  1,
-  x1(p),
-  2,
-  3,
-  4,
-];
+): number[] =>
+  [
+    0,
+    p.b2 / 2,
+    1,
+    x1(p),
+    2,
+    3,
+    4,
+  ].sort();

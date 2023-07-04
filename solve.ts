@@ -1,5 +1,5 @@
 import { SteelDiameter } from "./steel.ts";
-import { checkPoints, isSafe, Param, V_c, V_s } from "./mod.ts";
+import { checkPoints, isSafe, Param, V_c, V_s, x1 } from "./mod.ts";
 
 /** かぶり (mm)
  *
@@ -48,8 +48,11 @@ for (const phi of ([15.9, 19.1, 22.2] as SteelDiameter[])) {
               m,
               n,
             };
+            if (x1(param) <= 0) continue;
             // 一番短いところで確定する
-            if (!checkPoints(param).every((x) => isSafe({ x, ...param }))) {
+            if (
+              !checkPoints(param).every((x) => isSafe({ x, ...param }))
+            ) {
               continue;
             }
 
